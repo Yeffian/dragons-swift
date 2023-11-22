@@ -1,28 +1,37 @@
 import SwiftUI
 
 struct ContentView: View {
-    @State var todos: Array<String> = Array()
+    @State private var itemList = Array<String>()
+    
+    @State private var showingAlert = false
+    @State private var newListItem = ""
     
     var body: some View {
-        Text("Todo App")
-        VStack(alignment: .center) {
-            List($todos, id: \.self) { todo in 
-                HStack {
-                    Spacer()
-                    Text(todo)
-                    Spacer()
-                    // Initalizer 'init(_:)' requires that Binding<String> conform to 'StringProtocol"
-                    Button() {
-                        todos.remove(at: todos.firstIndex(of: todo))
-                    }
+        NavigationStack {
+            List {
+                ForEach(itemList, id: \.self) { contact in
+                    Text(contact)
+                }.onDelete { indexSet in
+                    itemList.remove(atOffsets: indexSet)
+                }
+                .onMove { itemList.move(fromOffsets: $0, toOffset: $1)}
+            }
+            .toolbar {
+                EditButton()
+                Button("+") {
+                    showingAlert.toggle()
+                    print("Pressed")
+                }
+                .alert("Enter a list item", isPresented: $showingAlert) {
+                    TextField("Enter list item", text: $newListItem)
+                    Button("OK", action: submit)
                 }
             }
-            
-            Button("Show") {
-                todos.append("Foo")
-                todos.append("Bar")
-                todos.append("Baz")
-            }
         }
+    }
+    func submit() {
+        print("You entered \(newListItem)")
+        itemList.append(newListItem)
+        
     }
 }
